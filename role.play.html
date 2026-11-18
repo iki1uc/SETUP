@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HNF — System- und Spielfeld</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #080b12;
+  --panel: #101722;
+  --line: #29374a;
+  --gold: #ffd166;
+  --cyan: #65d9ff;
+  --green: #78efa9;
+  --red: #ff7185;
+  --text: #e8eef5;
+  --muted: #9aabc0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 18px; background: var(--bg); color: var(--text);
+  font: 14px/1.5 "Courier New", monospace;
+}
+header, .panel {
+  max-width: 1100px; margin: 0 auto 14px;
+}
+h1 { color: var(--gold); font-size: 22px; margin: 0; }
+.subtitle { color: var(--muted); margin-top: 5px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, 1fr); gap: 14px; max-width: 1100px; margin: auto; }
+.panel { max-width: none; margin: 0; padding: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+h2 { font-size: 15px; color: var(--cyan); margin: 0 0 10px; }
+button, select {
+  padding: 8px 10px; margin: 3px; border: 1px solid var(--line); border-radius: 7px;
+  color: var(--text); background: #0a1019; font: inherit; cursor: pointer;
+}
+button:hover { border-color: var(--gold); }
+button.active { background: var(--gold); color: #111; }
+.controls { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+#field {
+  display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1;
+  border: 2px solid var(--gold); border-radius: 8px; overflow: hidden;
+}
+.cell {
+  display: grid; place-items: center; min-width: 0; position: relative;
+  border: 1px solid #273346; background: #121c29; cursor: pointer;
+  font-size: clamp(16px, 3vw, 28px);
+}
+.cell:nth-child(16n + 1), .cell:nth-child(16n + 3), .cell:nth-child(16n + 5), .cell:nth-child(16n + 7),
+.cell:nth-child(16n + 10), .cell:nth-child(16n + 12), .cell:nth-child(16n + 14), .cell:nth-child(16n + 16) {
+  background: #1a2635;
+}
+.cell:hover { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.cell.goal { box-shadow: inset 0 0 0 3px var(--green); }
+.cell.selected { outline: 3px solid var(--gold); outline-offset: -3px; }
+.ball { filter: drop-shadow(0 0 5px white); }
+.metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.metric { padding: 9px; background: #080e16; border: 1px solid var(--line); border-radius: 8px; }
+.metric b { display: block; color: var(--gold); font-size: 18px; }
+.status { margin-top: 10px; padding: 10px; border-left: 3px solid var(--green); background: #0a1512; }
+.log { height: 145px; overflow: auto; padding: 8px; background: #05080d; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); font-size: 12px; }
+.note { color: var(--muted); font-size: 12px; }
+.rules { color: var(--muted); padding-left: 18px; }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } body { padding: 10px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>HNF — System- und Spielfeld</h1>
+  <div class="subtitle">SCSI · RAID · SLI · Schach · Soccer · Wetterphänomene</div>
+</header>
+
+<main class="layout">
+  <section class="panel">
+    <h2>Feld — 8 × 8 Zellen</h2>
+    <div class="controls" aria-label="Werkzeuge">
+      <button class="tool active" data-tool="figure">♟ Figur</button>
+      <button class="tool" data-tool="ball">⚽ Ball</button>
+      <button class="tool" data-tool="ref">🟨 Schiedsrichter</button>
+      <button class="tool" data-tool="judge">⚖ Richter</button>
+      <button class="tool" data-tool="goal">🥅 Tor markieren</button>
+      <button id="clear">Feld leeren</button>
+      <button id="weather">Wetter wechseln</button>
+    </div>
+    <div id="field" role="grid" aria-label="Interaktives Spielfeld"></div>
+    <p class="note">Werkzeug auswählen und dann eine Zelle anklicken. Figuren und Ball lassen sich durch erneutes Setzen verschieben.</p>
+  </section>
+
+  <aside>
+    <section class="panel">
+      <h2>Systemmodell</h2>
+      <div class="metrics">
+        <div class="metric">SCSI — Verbindung<b id="scsi">BEREIT</b></div>
+        <div class="metric">RAID — Redundanz<b id="raid">AKTIV</b></div>
+        <div class="metric">SLI — Zusammenarbeit<b id="sli">1 / 2</b></div>
+        <div class="metric">Wetter<b id="weatherName">Klar</b></div>
+      </div>
+      <div class="status" id="status">Bereit. Setze Figuren, Ball oder Rollen auf das Feld.</div>
+    </section>
+
+    <section class="panel" style="margin-top:14px">
+      <h2>Spielrollen und Begriffe</h2>
+      <ul class="rules">
+        <li><b>Figur:</b> Spielobjekt auf einer Zelle.</li>
+        <li><b>Ball:</b> Soccer-Objekt; pro Feld höchstens ein Ball.</li>
+        <li><b>Schiedsrichter:</b> beobachtet den Spielzustand.</li>
+        <li><b>Richter:</b> markiert eine Entscheidung im Modell, keine echte Rechtsentscheidung.</li>
+        <li><b>SCSI:</b> hier als Verbindung/Kommunikationsweg dargestellt.</li>
+        <li><b>RAID:</b> hier als symbolische Sicherungsanzeige, keine Datensicherung.</li>
+        <li><b>SLI:</b> hier als Zusammenarbeit zweier Systemteile, nicht als GPU-Steuerung.</li>
+      </ul>
+    </section>
+
+    <section class="panel" style="margin-top:14px">
+      <h2>Ereignisprotokoll</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+    </section>
+  </aside>
+</main>
+
+<script>
+const field = document.getElementById("field");
+const statusBox = document.getElementById("status");
+const logBox = document.getElementById("log");
+const weatherTypes = [
+  { name: "Klar", icon: "☀️" },
+  { name: "Regen", icon: "🌧️" },
+  { name: "Wind", icon: "💨" },
+  { name: "Schnee", icon: "❄️" },
+  { name: "Gewitter", icon: "⛈️" }
+];
+
+let tool = "figure";
+let weatherIndex = 0;
+let cells = Array.from({ length: 64 }, () => ({
+  figure: false, ball: false, referee: false, judge: false, goal: false
+}));
+
+function log(message) {
+  const line = document.createElement("div");
+  line.textContent = `[${new Date().toLocaleTimeString("de-DE")}] ${message}`;
+  logBox.prepend(line);
+}
+
+function render() {
+  field.replaceChildren();
+  cells.forEach((cell, index) => {
+    const button = document.createElement("button");
+    button.className = "cell" + (cell.goal ? " goal" : "");
+    button.setAttribute("role", "gridcell");
+    button.setAttribute("aria-label", `Zelle ${index + 1}`);
+    const pieces = [];
+    if (cell.figure) pieces.push("♟");
+    if (cell.ball) pieces.push('<span class="ball">⚽</span>');
+    if (cell.referee) pieces.push("🟨");
+    if (cell.judge) pieces.push("⚖️");
+    button.innerHTML = pieces.join(" ");
+    button.onclick = () => place(index);
+    field.appendChild(button);
+  });
+  updateMetrics();
+}
+
+function place(index) {
+  const cell = cells[index];
+
+  if (tool === "figure") {
+    cell.figure = !cell.figure;
+    log(`Figur ${cell.figure ? "gesetzt" : "entfernt"} auf Zelle ${index + 1}.`);
+  } else if (tool === "ball") {
+    cells.forEach(item => item.ball = false);
+    cell.ball = true;
+    log(`Ball auf Zelle ${index + 1} bewegt.`);
+  } else if (tool === "ref") {
+    cells.forEach(item => item.referee = false);
+    cell.referee = true;
+    log(`Schiedsrichter auf Zelle ${index + 1} positioniert.`);
+  } else if (tool === "judge") {
+    cells.forEach(item => item.judge = false);
+    cell.judge = true;
+    log(`Richter-Rolle auf Zelle ${index + 1} markiert.`);
+  } else if (tool === "goal") {
+    cell.goal = !cell.goal;
+    log(`Tor-Ziel ${cell.goal ? "markiert" : "entfernt"} auf Zelle ${index + 1}.`);
+  }
+
+  render();
+  checkGoal();
+}
+
+function checkGoal() {
+  const scored = cells.some(cell => cell.ball && cell.goal);
+  if (scored) {
+    statusBox.textContent = "Tor im Modell — Ball und Tor befinden sich in derselben Zelle.";
+    log("Tor-Ereignis erkannt.");
+  } else {
+    statusBox.textContent = "Feld aktualisiert. Prüfe Positionen und Wetter.";
+  }
+}
+
+function updateMetrics() {
+  const count = id => cells.filter(cell => cell[id]).length;
+  document.getElementById("scsi").textContent = count("figure") + count("ball") > 0 ? "VERBUNDEN" : "BEREIT";
+  document.getElementById("raid").textContent = "AKTIV · SYMBOLISCH";
+  document.getElementById("sli").textContent = `${count("referee") + count("judge")} / 2`;
+  document.getElementById("weatherName").textContent =
+    `${weatherTypes[weatherIndex].icon} ${weatherTypes[weatherIndex].name}`;
+}
+
+document.querySelectorAll(".tool").forEach(button => {
+  button.onclick = () => {
+    document.querySelectorAll(".tool").forEach(item => item.classList.remove("active"));
+    button.classList.add("active");
+    tool = button.dataset.tool;
+    statusBox.textContent = `Werkzeug gewählt: ${button.textContent.trim()}.`;
+  };
+});
+
+document.getElementById("clear").onclick = () => {
+  cells = cells.map(() => ({ figure: false, ball: false, referee: false, judge: false, goal: false }));
+  statusBox.textContent = "Feld geleert.";
+  log("Alle Feldobjekte und Markierungen entfernt.");
+  render();
+};
+
+document.getElementById("weather").onclick = () => {
+  weatherIndex = (weatherIndex + 1) % weatherTypes.length;
+  statusBox.textContent = `Wetterphänomen: ${weatherTypes[weatherIndex].name}.`;
+  log(`Wetter gewechselt: ${weatherTypes[weatherIndex].name}.`);
+  render();
+};
+
+render();
+log("HNF-Spielfeld gestartet.");
+</script>
+</body>
+</html>
