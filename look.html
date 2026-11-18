@@ -1,116 +1,157 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NC OBSERVER - EYE BRAIN CLOSED - ORIGIN</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#02060a;color:#c8d8e8;font-family:Consolas,monospace;padding:16px}h1{font-size:18px;color:#7ce0a8}h2{font-size:14px;color:#e8fff2;margin:12px 0 6px}.card{background:#0a1420;border:1px solid #1f3444;border-radius:14px;padding:14px;margin:10px 0}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.btn{background:#111927;color:#fff;border:1px solid #1f3444;padding:9px 14px;border-radius:99px;cursor:pointer;font-family:inherit}.btn.on{border-color:#ec4899;background:#1a0f1e}.btn.danger{border-color:#ef4444;color:#fca5a5}input{background:#091018;color:#fff;border:1px solid #1f3444;border-radius:8px;padding:9px;font-family:inherit;flex:1;min-width:220px}.grid{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-top:10px}.cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#091018;border:1px solid #1f3444;border-radius:8px;cursor:pointer;font-size:11px}.cell.target{border-color:#ec4899;background:#1a0f1e;color:#fff}.cell.focus{border-color:#22c55e;background:#0f1a12}.cell.blocked{opacity:.35;cursor:not-allowed}.log{background:#000;border:1px solid #1f3444;border-radius:10px;padding:10px;font-size:11px;white-space:pre-wrap;max-height:240px;overflow:auto}.spinner{width:34px;height:34px;border:3px solid #1f3444;border-top-color:#7ce0a8;border-radius:50%;display:inline-block}.spinner.run{animation:spin 0.8s linear infinite}.spinner.stopped{animation:none;border-top-color:#ef4444}@keyframes spin{to{transform:rotate(360deg)}}table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid #1f3444;padding:8px;text-align:left}th{color:#7ce0a8}.ok{color:#22c55e}.fail{color:#ef4444}</style></head><body>
-<h1>◈ NC OBSERVER · EYE BRAIN CLOSED · <span id="modus-label">ORIGIN</span></h1>
-<p>Vorher: nur gesagt „EYE CLOSED + BRAIN CLOSED = ORIGIN". Jetzt: durchgezogen bis HALT = ZIEL + FREEZE + TEST. Kein Auto-Run. Du klickst, es läuft. 1 TAB = 1 RESPO.</p>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>look.html — PC + PQ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#02060a;color:#c8d8e8;font:14px/1.6 Consolas,monospace}
+h1{font-size:20px;color:#7ce0a8}
+h2{font-size:15px;color:#e8fff2;margin:0 0 8px}
+.card{background:#0a1420;border:1px solid #1f3444;border-radius:14px;padding:16px;margin:12px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:240px}
+label{display:block;margin:10px 0 5px;color:#8fa8bd;font-size:12px}
+input,textarea{width:100%;padding:10px;background:#091018;color:#fff;border:1px solid #1f3444;border-radius:8px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+button{padding:10px 15px;border:1px solid #1f3444;border-radius:99px;background:#111927;color:#fff;font:inherit;cursor:pointer}
+button:hover{border-color:#7ce0a8}
+.badge{display:inline-block;padding:4px 9px;border:1px solid #7ce0a8;border-radius:99px;color:#7ce0a8}
+.log{white-space:pre-wrap;max-height:180px;overflow:auto;background:#000;padding:10px;border-radius:8px;font-size:12px}
+.small{color:#8fa8bd;font-size:12px}
+</style>
+</head>
+<body>
+<h1>👁️ look.html — PC + PQ</h1>
+<p>EYE OPEN: bewusst beobachten. BRAIN OPEN: wahrnehmen, nachdenken und erst dann handeln.</p>
 
-<div class="card"><h2>STATUS — das ist der Beweis, nicht das Wort</h2>
-<table><tr><th>EYE</th><th>BRAIN</th><th>MODUS</th><th>CTRL / CTRL.LER</th><th>DETERMINISTISCH</th><th>STATUS</th><th>FROZEN</th><th>TX / ZEILEN</th></tr>
-<tr><td id="s-eye">CLOSED</td><td id="s-brain">CLOSED</td><td id="s-modus">ORIGIN</td><td id="s-ctrl">AN / AN</td><td id="s-det">JA</td><td id="s-status">AUS</td><td id="s-frozen">NEIN</td><td id="s-tx">0 / 0</td></tr></table>
-<div class="row" style="margin-top:10px"><span class="spinner" id="spinner"></span><span id="spinner-label">Spinner steht — weil HALT. Wenn er läuft, läuft was. Wenn HALT, muss er stehen. Das ist der Beweis.</span></div></div>
+<div class="row">
+  <section class="card">
+    <h2>🪪 Ausweis aus id.html</h2>
+    <div id="identity">id.html wird geladen …</div>
+    <p id="load-status" class="small"></p>
+  </section>
 
-<div class="card"><h2>EYE / BRAIN — schalten, aber ehrlich</h2><div class="row">
-<button class="btn" id="btn-eye">EYE: CLOSED → OPEN</button><button class="btn" id="btn-brain">BRAIN: CLOSED → OPEN</button>
-<button class="btn" id="btn-boot">BOOT</button><button class="btn" id="btn-halt">HALT</button>
-<button class="btn danger" id="btn-freeze">FREEZE</button><button class="btn" id="btn-unfreeze">UNFREEZE</button>
-<button class="btn" id="btn-join">JOIN TEST 001-009</button>
-</div><p id="mode-explain" style="margin-top:8px">MODUS ORIGIN: EYE CLOSED + BRAIN CLOSED. CTRL AN, CTRL.LER AN, DETERMINISTISCH JA.</p></div>
+  <section class="card">
+    <h2>🤝 Gemeinsame Beobachtung</h2>
+    <label for="observer">Beobachter:in</label>
+    <input id="observer" placeholder="Name oder Rolle">
 
-<div class="card"><h2>Befehle — nc ...</h2>
-<p style="font-size:11px;color:#8fa8bd">nc help | nc boot | nc halt | nc eye open | nc brain closed | nc target 41 | nc zoom 81 | nc sam use | nc join test | nc import rome | nc export | nc chain</p>
-<div class="row"><input id="cmd-in" placeholder="nc help — tippen, ENTER ⏎"><button class="btn" id="btn-cmd">ENTER ⏎</button></div><p id="cmd-out" style="margin-top:8px">Bereit. Kein Auto-Run.</p></div>
+    <label for="partner">Partner:in</label>
+    <input id="partner" placeholder="Name oder Rolle">
 
-<div class="card"><h2>81 Raster · TARGET pink · FOKUS grün</h2><p id="grid-info">TARGET = 41 · FOKUS = 41 · Klick = FOKUS setzen. Wenn FROZEN, ist Raster blockiert.</p><div class="grid" id="grid"></div></div>
+    <label for="observation">Was sehe ich tatsächlich? (ohne Deutung)</label>
+    <textarea id="observation" placeholder="Beschreibe konkrete, beobachtbare Dinge …"></textarea>
 
-<div class="card"><h2>JOIN TEST 001-009 — systemübergreifend, nicht nur behauptet</h2><div id="join-out">Noch nicht gelaufen. Klick JOIN TEST 001-009.</div></div>
+    <label for="thinking">Was denke ich darüber? Was ist noch unklar?</label>
+    <textarea id="thinking" placeholder="Trenne Beobachtung und Interpretation …"></textarea>
 
-<div class="card"><h2>FERTIG-BEWEIS — Was CLOSED jetzt wirklich tut</h2>
-<ol style="font-size:12px;line-height:1.8;padding-left:18px">
-<li>EYE CLOSED + BRAIN CLOSED → MODUS ORIGIN</li>
-<li>ORIGIN → CTRL AN, CTRL.LER AN, DETERMINISTISCH JA</li>
-<li>ORIGIN + BOOT bestanden + Zeuge heil → HALT = ZIEL</li>
-<li>HALT = ZIEL → FREEZE: Animation pausiert, Raster blockiert, Befehle blockiert außer unfreeze / halt / status / log / chain</li>
-<li>EYE OPEN oder BRAIN OPEN → MODUS GEMISCHT / LOOK → HALT = OFFEN, kein FREEZE, kein ZIEL</li>
-<li>JOIN TEST 001-009 prüft das alles systemübergreifend, nicht nur behauptet.</li>
-</ol><p><b>Vorher fehlte: Schritt 3, 4, 5, 6. Jetzt drin.</b> — das sagt der Andere. PQ sagt: Jetzt klickbar drin.</p></div>
+    <label for="question">Welche Rückfrage klärt unsere Wahrnehmung?</label>
+    <textarea id="question" placeholder="Frage stellen, zuhören, Verständnis prüfen …"></textarea>
 
-<div class="card"><h2>LOGBOOK · Append-only · Kein Löschen</h2><div class="log" id="log"></div></div>
+    <div class="row" style="margin-top:12px">
+      <button id="save">💾 Beobachtung speichern</button>
+      <button id="clear">Neue Beobachtung</button>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>✅ Bewusst handeln</h2>
+  <p><span class="badge">EYE OPEN + BRAIN OPEN</span></p>
+  <p>Beide Personen bestätigen: Wir haben beobachtet, nachgefragt und unsere Deutung geprüft, bevor wir handeln.</p>
+  <label><input id="agree" type="checkbox" style="width:auto"> Wir sind bereit, bewusst weiterzugehen.</label>
+  <p id="action-status" class="small">Noch nicht bestätigt.</p>
+</section>
+
+<section class="card">
+  <h2>Log</h2>
+  <div class="log" id="log"></div>
+</section>
 
 <script>
-let S={eye:'CLOSED',brain:'CLOSED',status:'AUS',frozen:false,tx:0,bootOk:false,haltZiel:false,target:41,focus:41,log:[]};
-const $=id=>document.getElementById(id);
-function log(m){S.tx++; S.log.unshift('['+new Date().toLocaleTimeString('de-DE')+'] '+m); $('log').textContent=S.log.join('\n'); $('s-tx').textContent=S.tx+' / '+S.log.length;}
-function modus(){ if(S.eye==='CLOSED'&&S.brain==='CLOSED') return 'ORIGIN'; if(S.eye==='OPEN'||S.brain==='OPEN') return (S.eye==='OPEN'&&S.brain==='OPEN')?'LOOK':'GEMISCHT'; return 'ORIGIN';}
-function render(){
-  $('s-eye').textContent=S.eye; $('s-brain').textContent=S.brain; $('s-modus').textContent=modus(); $('modus-label').textContent=modus();
-  $('s-ctrl').textContent= modus()==='ORIGIN'?'AN / AN':'AUS / AUS';
-  $('s-det').textContent= modus()==='ORIGIN'?'JA':'NEIN';
-  $('s-status').textContent=S.status; $('s-frozen').textContent=S.frozen?'JA':'NEIN';
-  $('s-tx').textContent=S.tx+' / '+S.log.length;
-  const sp=$('spinner'); sp.className='spinner '+(S.frozen||S.status==='HALT'?'stopped':'run');
-  $('spinner-label').textContent = (S.frozen||S.status==='HALT')?'Spinner steht — weil HALT / FREEZE. Das ist der Beweis.':'Spinner läuft — weil nicht HALT. Bei HALT muss er stehen.';
-  $('mode-explain').textContent = modus()==='ORIGIN'?'MODUS ORIGIN: EYE CLOSED + BRAIN CLOSED. CTRL AN, CTRL.LER AN, DETERMINISTISCH JA.':'MODUS '+modus()+': EYE '+S.eye+' + BRAIN '+S.brain+'. HALT = OFFEN, kein FREEZE, kein ZIEL.';
-  $('btn-eye').textContent='EYE: '+S.eye+' → '+(S.eye==='CLOSED'?'OPEN':'CLOSED');
-  $('btn-brain').textContent='BRAIN: '+S.brain+' → '+(S.brain==='CLOSED'?'OPEN':'CLOSED');
-  $('grid-info').textContent='TARGET = '+S.target+' · FOKUS = '+S.focus+' · Klick = FOKUS setzen. '+(S.frozen?'FROZEN: Raster blockiert.':'Raster offen.');
-  const g=$('grid'); if(!g.children.length){ for(let i=1;i<=81;i++){ const d=document.createElement('div'); d.className='cell'; d.textContent=i; d.onclick=()=>{ if(S.frozen){ log('BLOCKIERT: Raster-Klick '+i+' bei FREEZE abgelehnt'); $('cmd-out').textContent='BLOCKIERT: FREEZE — Raster blockiert.'; return;} S.focus=i; log('FOKUS = '+i); render(); }; g.appendChild(d);} }
-  [...g.children].forEach((c,i)=>{ const n=i+1; c.className='cell'+(n===S.target?' target':'')+(n===S.focus?' focus':'')+(S.frozen?' blocked':''); });
+const $ = id => document.getElementById(id);
+const KEY = "PC_PQ_LOOK";
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])
+);
+
+function log(message){
+  $("log").textContent =
+    `[${new Date().toLocaleTimeString("de-DE")}] ${message}\n` +
+    $("log").textContent;
 }
-function blocked(cmd){ if(!S.frozen) return false; const ok=['unfreeze','halt','status','log','chain','help']; return !ok.some(k=>cmd.includes(k)); }
-function runCmd(raw){
-  const cmd=raw.trim().toLowerCase(); if(!cmd) return;
-  log('> '+raw);
-  if(blocked(cmd)){ $('cmd-out').textContent='BLOCKIERT bei FREEZE: nur unfreeze / halt / status / log / chain erlaubt. Befehl: '+raw; log('BLOCKIERT bei FREEZE: '+raw); return; }
-  if(cmd==='nc help') $('cmd-out').textContent='nc help | nc boot | nc halt | nc eye open | nc eye closed | nc brain open | nc brain closed | nc target 41 | nc zoom 81 | nc sam use | nc join test | nc import rome | nc export | nc chain';
-  else if(cmd==='nc boot'){ S.bootOk=true; S.status='BOOT OK'; log('BOOT bestanden'); $('cmd-out').textContent='BOOT OK. Jetzt: nc halt → HALT = ZIEL, wenn Zeuge heil.'; }
-  else if(cmd==='nc halt'){ if(modus()!=='ORIGIN'){ S.status='OFFEN'; S.haltZiel=false; $('cmd-out').textContent='HALT = OFFEN — weil MODUS '+modus()+', nicht ORIGIN. Kein ZIEL, kein FREEZE.'; log('HALT = OFFEN, MODUS '+modus()); } else if(!S.bootOk){ S.status='HALT — BOOT FEHLT'; $('cmd-out').textContent='HALT abgelehnt: BOOT fehlt. Erst nc boot.'; log('HALT abgelehnt: BOOT fehlt'); } else { S.status='HALT'; S.haltZiel=true; $('cmd-out').textContent='HALT = ZIEL. ORIGIN + BOOT bestanden. Jetzt FREEZE möglich.'; log('HALT = ZIEL erreicht'); } }
-  else if(cmd==='nc eye open'){ S.eye='OPEN'; log('EYE OPEN'); $('cmd-out').textContent='EYE OPEN → MODUS '+modus()+'. HALT = OFFEN.'; }
-  else if(cmd==='nc eye closed'){ S.eye='CLOSED'; log('EYE CLOSED'); $('cmd-out').textContent='EYE CLOSED.'; }
-  else if(cmd==='nc brain open'){ S.brain='OPEN'; log('BRAIN OPEN'); $('cmd-out').textContent='BRAIN OPEN → MODUS '+modus()+'. HALT = OFFEN.'; }
-  else if(cmd==='nc brain closed'){ S.brain='CLOSED'; log('BRAIN CLOSED'); $('cmd-out').textContent='BRAIN CLOSED.'; }
-  else if(cmd.startsWith('nc target')){ const n=parseInt(cmd.split(' ')[2]); if(n>=1&&n<=81){ S.target=n; S.focus=n; log('TARGET = '+n); $('cmd-out').textContent='TARGET = '+n; } else $('cmd-out').textContent='TARGET muss 1-81 sein.'; }
-  else if(cmd==='nc zoom 81'){ $('cmd-out').textContent='ZOOM 81: Raster ist 81. TARGET '+S.target+' pink, FOKUS '+S.focus+' grün.'; log('ZOOM 81'); }
-  else if(cmd==='nc sam use'){ $('cmd-out').textContent='SAM USE: Log ist append-only. Kein Löschen. Zeuge = Log.'; log('SAM USE'); }
-  else if(cmd==='nc join test'){ runJoin(); }
-  else if(cmd==='nc import rome'){ $('cmd-out').textContent='IMPORT ROME: ROME ist ein Name, keine Datei. Kein Import ohne Datei. HALT.'; log('IMPORT ROME abgelehnt: keine Datei'); }
-  else if(cmd==='nc export'){ $('cmd-out').textContent='EXPORT: '+JSON.stringify({eye:S.eye,brain:S.brain,modus:modus(),status:S.status,frozen:S.frozen,target:S.target,tx:S.tx}); log('EXPORT'); }
-  else if(cmd==='nc chain'){ $('cmd-out').textContent='CHAIN: EYE '+S.eye+' → BRAIN '+S.brain+' → MODUS '+modus()+' → STATUS '+S.status+' → FROZEN '+S.frozen+' → TARGET '+S.target; log('CHAIN'); }
-  else if(cmd==='nc freeze'||cmd==='nc unfreeze'){ $('cmd-out').textContent='Nutze FREEZE / UNFREEZE Knopf oder nc freeze ist: '+cmd; }
-  else if(cmd==='nc status'){ $('cmd-out').textContent='STATUS: EYE '+S.eye+' BRAIN '+S.brain+' MODUS '+modus()+' STATUS '+S.status+' FROZEN '+S.frozen; }
-  else if(cmd==='nc log'){ $('cmd-out').textContent='LOG: '+S.log.length+' Zeilen, append-only.'; }
-  else { $('cmd-out').textContent='Unbekannt: '+raw+' — tippe nc help'; log('Unbekannt: '+raw); }
-  render();
+
+async function loadIdentity(){
+  try{
+    const response = await fetch("id.html", {cache:"no-store"});
+    if(!response.ok) throw new Error("HTTP " + response.status);
+    const text = await response.text();
+    const doc = new DOMParser().parseFromString(text, "text/html");
+    const heading = doc.querySelector("h1");
+    const content = doc.querySelector("body")?.innerText || doc.body.innerText;
+
+    $("identity").innerHTML =
+      `<strong>${esc(heading?.textContent || "id.html")}</strong><pre style="white-space:pre-wrap">${esc(content)}</pre>`;
+    $("load-status").textContent = "Ausweis geladen.";
+    log("PQ: id.html geladen.");
+  }catch(error){
+    $("identity").textContent = "Ausweis nicht geladen.";
+    $("load-status").textContent =
+      "Bitte über einen lokalen Webserver öffnen und id.html in denselben Ordner legen.";
+    log("HALT: id.html konnte nicht geladen werden — " + error.message);
+  }
 }
-function runJoin(){
-  const tests=[
-    ['001 EYE CLOSED + BRAIN CLOSED = ORIGIN', S.eye==='CLOSED'&&S.brain==='CLOSED'&&modus()==='ORIGIN'],
-    ['002 ORIGIN = CTRL AN, CTRL.LER AN, DET JA', modus()==='ORIGIN'],
-    ['003 BOOT bestanden', S.bootOk],
-    ['004 HALT = ZIEL nur bei ORIGIN + BOOT', S.haltZiel ? (modus()==='ORIGIN'&&S.bootOk) : true],
-    ['005 FREEZE blockiert Raster', true],
-    ['006 FREEZE blockiert Befehle außer unfreeze/halt/status/log/chain', true],
-    ['007 EYE OPEN oder BRAIN OPEN = kein ZIEL', modus()!=='ORIGIN' ? !S.haltZiel || true : true],
-    ['008 TARGET 1-81, FOKUS gesetzt', S.target>=1&&S.target<=81&&S.focus>=1&&S.focus<=81],
-    ['009 LOG append-only, kein Löschen', S.log.length===S.tx],
-  ];
-  // Echte Prüfung für 005/006: wir testen blockiert-Logik wirklich
-  tests[4][1]= blocked('nc target 50')===S.frozen;
-  tests[5][1]= S.frozen ? (blocked('nc target 50')&&!blocked('nc chain')) : true;
-  // 007 ehrlich: wenn GEMISCHT/LOOK, darf HALT nicht ZIEL sein
-  if(modus()!=='ORIGIN'&&S.status==='HALT'&&S.haltZiel) tests[6][1]=false;
-  const pass=tests.filter(t=>t[1]).length;
-  $('join-out').innerHTML = tests.map(t=>'<div><span class="'+(t[1]?'ok':'fail')+'">'+(t[1]?'✓ PASS':'✗ FAIL')+'</span> '+t[0]+'</div>').join('')+'<p style="margin-top:8px"><b>'+pass+'/9 bestanden.</b> '+(pass===9?'JOIN TEST BESTANDEN — aber nur in diesem Stand. Nicht für immer.':'JOIN TEST NICHT BESTANDEN — der Andere hat FERTIG gesagt, aber hier fehlt noch was. Siehe FAIL oben.')+'</p>';
-  log('JOIN TEST: '+pass+'/9');
-  render();
+
+function readForm(){
+  return {
+    observer:$("observer").value.trim(),
+    partner:$("partner").value.trim(),
+    observation:$("observation").value.trim(),
+    thinking:$("thinking").value.trim(),
+    question:$("question").value.trim()
+  };
 }
-$('btn-eye').onclick=()=>runCmd(S.eye==='CLOSED'?'nc eye open':'nc eye closed');
-$('btn-brain').onclick=()=>runCmd(S.brain==='CLOSED'?'nc brain open':'nc brain closed');
-$('btn-boot').onclick=()=>runCmd('nc boot');
-$('btn-halt').onclick=()=>runCmd('nc halt');
-$('btn-freeze').onclick=()=>{ if(!S.haltZiel){ $('cmd-out').textContent='FREEZE abgelehnt: erst HALT = ZIEL. Erst nc boot, dann nc halt.'; log('FREEZE abgelehnt: HALT != ZIEL'); return;} S.frozen=true; S.status='FROZEN + HALT'; log('FREEZE: Animation pausiert, Raster blockiert, Befehle blockiert'); render(); };
-$('btn-unfreeze').onclick=()=>{ S.frozen=false; S.status='AUS'; S.haltZiel=false; log('UNFREEZE'); render(); };
-$('btn-join').onclick=()=>runCmd('nc join test');
-$('btn-cmd').onclick=()=>{runCmd($('cmd-in').value); $('cmd-in').value='';};
-$('cmd-in').addEventListener('keydown',e=>{if(e.key==='Enter'){runCmd(e.target.value); e.target.value='';}});
-log('NC OBSERVER EYE BRAIN CLOSED gestartet. Kein Auto-Run.');
-render();
-</script></body></html>
+
+$("save").onclick = () => {
+  const data = readForm();
+  localStorage.setItem(KEY, JSON.stringify(data));
+  log("PC: Beobachtung gespeichert; PQ hält fest.");
+};
+
+$("clear").onclick = () => {
+  $("observer").value = "";
+  $("partner").value = "";
+  $("observation").value = "";
+  $("thinking").value = "";
+  $("question").value = "";
+  $("agree").checked = false;
+  $("action-status").textContent = "Noch nicht bestätigt.";
+  localStorage.removeItem(KEY);
+  log("Neue Beobachtung gestartet.");
+};
+
+$("agree").onchange = () => {
+  $("action-status").textContent = $("agree").checked
+    ? "Bestätigt: bewusstes gemeinsames Handeln."
+    : "Noch nicht bestätigt.";
+  log($("agree").checked ? "Beide bestätigen: bewusst weitergehen." : "Bestätigung zurückgenommen.");
+};
+
+try{
+  const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+  if(saved){
+    $("observer").value = saved.observer || "";
+    $("partner").value = saved.partner || "";
+    $("observation").value = saved.observation || "";
+    $("thinking").value = saved.thinking || "";
+    $("question").value = saved.question || "";
+  }
+}catch{}
+
+loadIdentity();
+log("look.html gestartet — EYE OPEN + BRAIN OPEN.");
+</script>
+</body>
+</html>
