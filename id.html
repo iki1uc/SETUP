@@ -1,15 +1,240 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="utf-8"><title>ID — SAM</title>
-<style>body{background:#000;color:#eee;font-family:Consolas;padding:20px}</style>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DISPATCH · MOVE · WORK × ZOOM · ALL IN 1</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#05090d;color:#d7e5ef;font:12px Consolas,monospace;height:100vh;overflow:hidden}
+header{height:48px;display:flex;align-items:center;gap:7px;padding:6px 10px;border-bottom:1px solid #244331}
+.brand{color:#4ade80;letter-spacing:1px;font-weight:bold;margin-right:auto}
+button{background:#111827;color:#4ade80;border:1px solid #4ade80;border-radius:5px;padding:6px 10px;font:inherit;cursor:pointer}
+button.on{background:#4ade80;color:#07100c}
+button.halt{color:#f59e0b;border-color:#f59e0b}
+#info{position:absolute;right:10px;top:58px;z-index:2;color:#91a3b5;background:#05090ddd;padding:8px;border:1px solid #283544;line-height:1.6}
+main{height:calc(100vh - 198px);min-height:180px;position:relative}
+canvas{display:block;width:100%;height:100%}
+#log{height:150px;overflow:auto;background:#000;border-top:1px solid #4ade80;padding:8px;color:#9fb1c2;font-size:11px}
+</style>
 </head>
 <body>
-<h1>ID</h1>
-<p><b>Name:</b> SAM</p>
-<p><b>Marke:</b> wieimmer iki1uc</p>
-<p><b>Werk:</b> NC</p>
-<p><b>Modus:</b> offline, lokal</p>
-<p><b>Regel:</b> SAM leitet. Cloud folgt.</p>
-<p><a href="index.html">← zurück zu index</a></p>
+<header>
+  <span class="brand">DISPATCH · MOVE · WORK × ZOOM · LÄUFER</span>
+  <button id="start">START MOVE</button>
+  <button id="err">ERROR TEST</button>
+  <button id="halt" class="halt">HALT</button>
+  <button data-level="3" class="level on">ZOOM 3</button>
+  <button data-level="9" class="level">ZOOM 9</button>
+  <button data-level="81" class="level">ZOOM 81</button>
+  <button id="run" class="on">LÄUFER</button>
+  <button id="save">LOG SPEICHERN</button>
+</header>
+
+<div id="info">
+  DISPATCH außen · MOVE dazwischen · WORK innen<br>
+  ZOOM = sehen · ZO.OM = trennen · Z.O.O.M = zerlegen<br>
+  <span id="zoomLabel">ZOOM = 3</span>
+</div>
+
+<main><canvas id="cv"></canvas></main>
+<div id="log" aria-live="polite"></div>
+
+<script>
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const LOG=document.getElementById("log");
+const COLORS={READY:"#687582",MOVING:"#00ccff",SYNCING:"#ffd700",PROCESSING:"#ff8800",SAVING:"#00ff88",RESTORING:"#aa66ff",COMPLETE:"#00ff44",ERROR:"#ff3333",RETRY:"#ff8800"};
+const WORK={
+ WORK3:{level:3,fields:3,desc:"kleine Ebene (3, 9, 27)"},
+ WORK9:{level:9,fields:81,desc:"mittlere Ebene 9 × 9 = 81 Felder"},
+ WORK81:{level:81,fields:6561,desc:"große Ebene 81 × 81 = 6.561 Canvas-Felder"},
+ WORK243:{level:243,fields:59049,desc:"59.049 Felder · NETWORK"},
+ WORK729:{level:729,fields:531441,desc:"531.441 Felder · SYSTEM"},
+ WORK9BACK:{level:9,fields:81,desc:"Speicher · Historie · BACK"}
+};
+const nodes=[
+ {id:"WORK3",x:.08,y:.28,state:"READY"},
+ {id:"WORK9",x:.24,y:.28,state:"READY"},
+ {id:"WORK81",x:.40,y:.28,state:"READY"},
+ {id:"WORK243",x:.56,y:.28,state:"READY"},
+ {id:"WORK729",x:.72,y:.28,state:"READY"},
+ {id:"WORK9BACK",x:.88,y:.28,state:"READY"}
+];
+const map=Object.fromEntries(nodes.map(n=>[n.id,n]));
+const links=[["WORK3","WORK9"],["WORK9","WORK81"],["WORK81","WORK243"],["WORK243","WORK729"],["WORK729","WORK9BACK"]];
+const BASE=[{x:50,y:16,n:"ZOOM",s:"sehen"},{x:14,y:76,n:"ZO.OM",s:"trennen"},{x:86,y:76,n:"Z.O.O.M",s:"zerlegen"}];
+const center={x:50,y:56};
+let packets=[],halted=false,busy=false,logText="",level=3,running=true,pts=[],pos=0,W=0,H=0,dpr=1;
+
+function log(t){
+ const line="["+new Date().toLocaleTimeString("de-DE")+"] "+t;
+ LOG.insertAdjacentText("afterbegin",line+"\n");
+ logText=line+"\n"+logText;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+const DISPATCH={
+ modules:new Map(),history:[],
+ register(id,fn){this.modules.set(id,fn)},
+ send(from,to,action,payload={}){
+  const packet={id:Math.random().toString(36).slice(2),from,to,action,payload,ts:Date.now()};
+  this.history.push(packet);
+  log("DISPATCH MOVE "+from+" → "+to+" ["+action+"]");
+  const handler=this.modules.get(to);
+  if(!handler){log("ERROR TARGET_NOT_FOUND "+to);return{ok:false}}
+  try{return{ok:true,result:handler(packet)}}catch(e){log("ERROR "+e.message);return{ok:false}}
+ }
+};
+const MOVE={send:(from,to,action,payload)=>DISPATCH.send(from,to,action,payload)};
+Object.keys(WORK).forEach(id=>DISPATCH.register(id,p=>({level:WORK[id].level,fields:WORK[id].fields,packet:p})));
+
+function buildZoom(){
+ let p=BASE.map(b=>({...b,r:7.5}));
+ if(level>=9){
+  const q=[];
+  p.forEach(v=>BASE.forEach(b=>q.push({
+   x:v.x+(b.x-center.x)*.2,y:v.y+(b.y-center.y)*.2,
+   n:b.n,s:b.s,r:2.8
+  })));
+  p=q;
+ }
+ if(level>=81){
+  const q=[];
+  p.forEach(v=>{for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)
+   q.push({x:v.x+j*1.6,y:v.y+i*1.6,r:.6});});
+  p=q;
+ }
+ pts=p;pos=0;
+ document.getElementById("zoomLabel").textContent="ZOOM = "+level+" · "+pts.length+" Punkte";
+}
+
+function resize(){
+ const rect=cv.getBoundingClientRect();dpr=devicePixelRatio||1;
+ W=rect.width;H=rect.height;cv.width=W*dpr;cv.height=H*dpr;
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ const narrow=W<700;
+ const nodeY=narrow?.18:.25;
+ const nodeX=narrow?[.10,.26,.42,.58,.74,.90]:nodes.map(n=>n.x);
+ const radius=narrow?18:25;
+
+ // Pipeline links and nodes
+ ctx.lineWidth=1.5;ctx.strokeStyle="#34454d";
+ links.forEach(([a,b],i)=>{
+  const x1=nodeX[i]*W,y1=nodeY*H,x2=nodeX[i+1]*W,y2=nodeY*H;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+ });
+ nodes.forEach((n,i)=>{
+  const x=nodeX[i]*W,y=nodeY*H;
+  ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);
+  ctx.fillStyle=COLORS[n.state]||"#666";ctx.fill();
+  ctx.strokeStyle="#dce8ec";ctx.lineWidth=1;ctx.stroke();
+  ctx.textAlign="center";ctx.fillStyle="#fff";ctx.font="10px Consolas";
+  ctx.fillText(n.id,x,y+radius+14);
+  ctx.fillStyle="#aab8c3";ctx.fillText(n.state,x,y-radius-7);
+  ctx.font="9px Consolas";
+  ctx.fillText(WORK[n.id].fields.toLocaleString("de-DE")+" Felder",x,y+radius+27);
+ });
+
+ // Moving packets
+ for(let i=packets.length-1;i>=0;i--){
+  const p=packets[i];p.t+=.012;
+  const a=nodeX[p.index]*W,b=nodeX[p.index+1]*W,y=nodeY*H;
+  const x=a+(b-a)*Math.min(p.t,1);
+  ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
+  ctx.fillStyle="#00ffff";ctx.fill();
+  if(p.t>=1)packets.splice(i,1);
+ }
+
+ // Zoom triangle in lower area
+ const cx=W/2,cy=H*.68;
+ const scale=Math.min(W/130,H/105);
+ const X=x=>cx+(x-50)*scale,Y=y=>cy+(y-56)*scale;
+ ctx.strokeStyle="#4ade80";ctx.lineWidth=2;
+ [[0,1],[0,2],[1,2]].forEach(([a,b])=>{
+  ctx.beginPath();ctx.moveTo(X(BASE[a].x),Y(BASE[a].y));ctx.lineTo(X(BASE[b].x),Y(BASE[b].y));ctx.stroke();
+ });
+ BASE.forEach(b=>{
+  ctx.beginPath();ctx.arc(X(b.x),Y(b.y),Math.max(7,level===3?8:10),0,Math.PI*2);
+  ctx.fillStyle="#111827";ctx.fill();ctx.strokeStyle="#4ade80";ctx.lineWidth=2;ctx.stroke();
+ });
+ ctx.textAlign="center";ctx.fillStyle="#f59e0b";
+ ctx.font="bold 12px Consolas";ctx.fillText("ZOOMEND",cx,cy+5);
+ ctx.font="11px Consolas";ctx.fillText("bewegen",cx,cy+20);
+
+ if(level>=9)pts.forEach(p=>{
+  ctx.beginPath();ctx.arc(X(p.x),Y(p.y),Math.max(1,p.r*scale),0,Math.PI*2);
+  ctx.fillStyle=level===9?"#111827":"#4ade80";ctx.fill();
+  ctx.strokeStyle="#4ade80";ctx.lineWidth=level===9?1.5:0;ctx.stroke();
+ });
+
+ if(pts.length){
+  const i=Math.floor(pos)%pts.length,j=(i+1)%pts.length,f=pos-Math.floor(pos),e=f*f*(3-2*f);
+  const x=X(pts[i].x+(pts[j].x-pts[i].x)*e),y=Y(pts[i].y+(pts[j].y-pts[i].y)*e);
+  ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fillStyle="#4ade80";ctx.fill();ctx.globalAlpha=1;
+  ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle="#eafff2";ctx.fill();
+ }
+}
+let last=0;
+function frame(t){
+ const dt=Math.min(.05,(t-last)/1000||0);last=t;
+ if(running)pos+=dt*(level===3?.8:level===9?2.2:12);
+ draw();requestAnimationFrame(frame);
+}
+
+async function moveFlow(){
+ if(busy)return;
+ busy=true;halted=false;
+ const flow=["WORK3","WORK9","WORK81","WORK243","WORK729","WORK9BACK"];
+ try{
+  for(let i=0;i<flow.length;i++){
+   if(halted){log("HALT = ZIEL · MOVE gestoppt");return}
+   const id=flow[i];
+   MOVE.send(i?flow[i-1]:"DISPATCH",id,"SYNC",{axis:[3,9,27,81,243,729]});
+   map[id].state="MOVING";log(id+" MOVING · "+WORK[id].desc);
+   if(i<flow.length-1)packets.push({index:i,t:0});
+   await wait(800);
+   if(halted){log("HALT = ZIEL · MOVE gestoppt");return}
+   map[id].state="COMPLETE";
+  }
+  log("MOVE COMPLETE · HALT = ZIEL");
+ }finally{busy=false}
+}
+async function errorFlow(){
+ map.WORK243.state="ERROR";log("WORK243 ERROR");
+ await wait(700);
+ for(let i=1;i<=3;i++){
+  if(halted)break;
+  map.WORK243.state="RETRY";log("RETRY #"+i+" · MOVE RETRY");
+  await wait(400);if(halted)break;
+  map.WORK243.state="MOVING";await wait(400);
+ }
+ if(!halted){map.WORK243.state="COMPLETE";log("RECOVERED · DANEBEN → RETRY → TREFFER")}
+}
+
+document.getElementById("start").onclick=moveFlow;
+document.getElementById("err").onclick=errorFlow;
+document.getElementById("halt").onclick=()=>{halted=true;log("HALT geklickt · HALT = ZIEL")};
+document.getElementById("run").onclick=e=>{
+ running=!running;e.currentTarget.classList.toggle("on",running);
+};
+document.querySelectorAll(".level").forEach(b=>b.onclick=()=>{
+ level=Number(b.dataset.level);
+ document.querySelectorAll(".level").forEach(x=>x.classList.toggle("on",x===b));
+ buildZoom();
+});
+document.getElementById("save").onclick=()=>{
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([logText],{type:"text/plain"}));
+ a.download="MOVE-LOG.txt";a.click();URL.revokeObjectURL(a.href);
+ log("LOG SPEICHERN geklickt");
+};
+addEventListener("resize",resize);
+resize();buildZoom();requestAnimationFrame(frame);
+log("DISPATCH bereit · außen halten, MOVE dazwischen, WORK innen");
+log("ZOOM-LÄUFER verbunden · ZOOMEND bewegen");
+</script>
 </body>
 </html>
