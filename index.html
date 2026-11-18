@@ -1,45 +1,71 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SETUP — iki1uc</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      padding: 24px;
-      background: #000;
-      color: #eee;
-      font: 16px Consolas, monospace;
-    }
-    main {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 24px;
-      background: #0a1420;
-      border: 1px solid #1f3444;
-      border-radius: 14px;
-    }
-    h1 { color: #7ce0a8; }
-    a { color: #00e0ff; }
-    li { margin: 12px 0; }
-    .note { color: #a9bac8; line-height: 1.6; }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>SETUP — SAM leitet</h1>
-    <p>NC gehört SAM. Offline. Nichts ins Internet.</p>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SETUP-INDEX · JOIN 001–009</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:16px;background:#02060a;color:#c8d8e8;font:14px/1.6 Consolas,monospace}
+main{max-width:900px;margin:0 auto}h1{font-size:18px;color:#7ce0a8;margin:0 0 4px}h2{font-size:13px;color:#8fa8bd;letter-spacing:2px;margin:0 0 8px}
+.card{background:#0a1420;border:1px solid #1f3444;border-radius:14px;padding:14px;margin:12px 0}
+a{color:#00e0ff}table{border-collapse:collapse;width:100%}td,th{padding:5px 8px;border-bottom:1px solid #1f3444;text-align:left;vertical-align:top}th{color:#8fa8bd;font-weight:normal}
+.tag{display:inline-block;border:1px solid #7ce0a8;border-radius:99px;padding:0 8px;font-size:12px;color:#7ce0a8}.tag.spiel{border-color:#f59e0b;color:#f59e0b}.tag.last{border-color:#8fa8bd;color:#8fa8bd}
+.ok{color:#7ce0a8}.bad{color:#f87171}.small{color:#8fa8bd;font-size:12px}
+button{padding:9px 15px;border:1px solid #1f3444;border-radius:99px;background:#111927;color:#fff;font:inherit;cursor:pointer;margin:2px}button:hover{border-color:#7ce0a8}
+#log{white-space:pre-wrap;max-height:220px;overflow:auto;background:#000;padding:10px;border-radius:8px;font-size:12px}
+@media(max-width:560px){button{width:100%;min-height:46px}}
+</style></head><body><main>
+<h1>SETUP-INDEX — SAM leitet</h1>
+<p class="small">Liegt NEBEN dem Repo (kein Umbau). Offline, nichts ins Internet. Prüfen nur per Klick. · Reihenfolge: look → verify → dann SETUP oben</p>
 
-    <ul>
-      <li><a href="look.html">look.html — erst schauen</a></li>
-      <li><a href="verify.html">verify.html — dann prüfen</a></li>
-      <li><a href="id.html">id.html — wer leitet</a></li>
-    </ul>
+<div class="card"><h2>ZUERST · REIHENFOLGE</h2><table id="rows"></table></div>
 
-    <p class="note">EICH + GEN + MARKE dürfen nicht entfernt werden.</p>
-  </main>
-</body>
-</html>
+<div class="card"><h2>NC-JOIN-001 … 009 · 9 Dateien</h2>
+<button id="check" type="button">JOINS PRÜFEN</button><button id="save" type="button">LOG SPEICHERN</button>
+<span id="sum" class="small"></span>
+<table id="joins" style="margin-top:8px"></table>
+<p class="small">Prüft pro Datei: erreichbar · Größe · Titel. Für README zusätzlich: EICH + GEN + MARKE noch vorhanden.<br>
+Öffne diese Seite über einen lokalen Server (Ordner = SETUP, z. B. <code>python -m http.server 8000</code>), sonst blockt der Browser das Lesen.</p></div>
+
+<div class="card"><h2>LOG · nur anhängen</h2><div id="log" role="status" aria-live="polite"></div></div>
+</main>
+<script>
+// Reihenfolge = Reihenfolge der JOINs. Rollen laut README; "gelesen" = Inhalt wurde wirklich gelesen.
+const FILES=[
+ {f:"look.html",   rolle:"LOOK",   text:"erst schauen · EYE OPEN + BRAIN OPEN · keine Kontrolle", gelesen:true},
+ {f:"verify.html", rolle:"VERIFY", text:"dann prüfen · Zeuge, Kette",                              gelesen:false},
+ {f:"id.html",     rolle:"ID",     text:"wer leitet (SAM / CTRL)",                                 gelesen:true},
+ {f:"set.up.html", rolle:"AUFBAU", text:"nur nach look → verify",                                  gelesen:false},
+ {f:"role.play.html",rolle:"SPIEL",text:"Spiel, nie als Beweis nehmen",                            gelesen:false,spiel:true},
+ {f:"vol.3.html",  rolle:"LETZTER",text:"erst wenn die ersten stehen",                             gelesen:false,last:true},
+ {f:"index.html",  rolle:"EINSTIEG",text:"TAB ALLER · Einstieg",                                   gelesen:true},
+ {f:"README.md",   rolle:"LOGBUCH",text:"EICH + GEN + MARKE · append-only, nie löschen",           gelesen:true,must:["EICH","GEN","MARKE"]},
+ {f:"real.png",    rolle:"BILD",   text:"Bild des Repos",                                          gelesen:false,bild:true}
+];
+const $=id=>document.getElementById(id),KEY="setup-index.log";
+let zeilen=[];try{const s=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(s))zeilen=s;}catch{}
+const p=n=>String(n).padStart(2,"0"),zeit=()=>{const d=new Date();return p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());};
+function L(t){const z=zeit()+" | "+t;zeilen.push(z);try{localStorage.setItem(KEY,JSON.stringify(zeilen));}catch{}$("log").textContent+=z+"\n";$("log").scrollTop=$("log").scrollHeight;}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+$("rows").innerHTML=FILES.map((x,i)=>`<tr><td>${i+1}</td><td><a href="${x.f}">${esc(x.f)}</a></td><td><span class="tag ${x.spiel?"spiel":x.last?"last":""}">${x.rolle}</span></td><td>${esc(x.text)}${x.gelesen?"":' <span class="small">(Inhalt hier nicht gelesen)</span>'}</td></tr>`).join("");
+const jid=i=>"NC-JOIN-"+String(i+1).padStart(3,"0");
+$("joins").innerHTML="<tr><th>JOIN</th><th>Datei</th><th>Status</th></tr>"+FILES.map((x,i)=>`<tr><td>${jid(i)}</td><td>${esc(x.f)}</td><td id="j${i}" class="small">nicht geprüft</td></tr>`).join("");
+async function pruefeEine(x){
+  const r=await fetch(x.f,{cache:"no-store"});
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  if(x.bild){const b=await r.blob();return{ok:b.size>0&&/image/.test(b.type||"image"),info:b.size+" Byte"};}
+  const t=await r.text();let info=t.length+" Zeichen";
+  const m=t.match(/<title>([^<]*)<\/title>/i);if(m)info+=" · "+m[1].trim().slice(0,40);
+  if(x.must){const fehlt=x.must.filter(w=>!t.includes(w));if(fehlt.length)return{ok:false,info:"FEHLT: "+fehlt.join(", ")};info+=" · "+x.must.join(" + ")+" ✓";}
+  return{ok:t.length>0,info};
+}
+$("check").onclick=async()=>{
+  $("check").disabled=true;L("JOINS PRÜFEN geklickt");let ok=0;
+  for(let i=0;i<FILES.length;i++){
+    let res;try{res=await pruefeEine(FILES[i]);}catch(e){res={ok:false,info:e.message==="Failed to fetch"?"nicht lesbar (lokalen Server nutzen)":e.message};}
+    if(res.ok)ok++;
+    $("j"+i).innerHTML=`<span class="${res.ok?"ok":"bad"}">${res.ok?"✓":"✗"}</span> ${esc(res.info)}`;
+    L(`${jid(i)} · ${FILES[i].f} · ${res.ok?"✓":"✗"} · ${res.info}`);
+  }
+  $("sum").textContent=` ${ok}/9 ✓`;L(`JOINS ${ok}/9 ✓ · HALT = ZIEL`);$("check").disabled=false;
+};
+$("save").onclick=()=>{L("LOG SPEICHERN geklickt");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([zeilen.join("\n")+"\n"],{type:"text/plain;charset=utf-8"}));a.download="SETUP-LOG.txt";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+zeilen.forEach(z=>{$("log").textContent+=z+"\n";});L("SETUP-INDEX geöffnet. Kein Auto-Start.");
+</script></body></html>
