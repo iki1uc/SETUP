@@ -1,58 +1,135 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SETUP - PC + PQ - links / rechts</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#02060a;color:#c8d8e8;font-family:Consolas,monospace;padding:16px}h1{color:#7ce0a8;font-size:18px}h2{font-size:14px;color:#e8fff2;margin:10px 0 6px}.card{background:#0a1420;border:1px solid #1f3444;border-radius:14px;padding:14px;margin:10px 0}.row{display:flex;gap:10px;flex-wrap:wrap}.panel{flex:1;min-width:260px;background:#091018;border:2px solid #1f3444;border-radius:14px;padding:14px}.panel.left{border-color:#06b6d4}.panel.right{border-color:#ec4899}.btn{background:#111927;color:#fff;border:1px solid #1f3444;padding:9px 14px;border-radius:99px;cursor:pointer;font-family:inherit}.btn.on{border-color:#ec4899;background:#1a0f1e}input,select{background:#091018;color:#fff;border:1px solid #1f3444;border-radius:8px;padding:8px;font-family:inherit;width:100%}table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid #1f3444;padding:8px;text-align:left}th{color:#7ce0a8}.log{background:#000;border:1px solid #1f3444;border-radius:10px;padding:10px;font-size:11px;white-space:pre-wrap;max-height:220px;overflow:auto}.badge{display:inline-block;padding:2px 8px;border-radius:99px;border:1px solid #1f3444;font-size:10px}</style></head><body>
-<h1>◈ SETUP — PC + PQ — links / rechts weiß Bescheid</h1>
-<p>PC = macht · PQ = hält fest · HALT = keiner rennt los</p>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>verify.html — PC + PQ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#02060a;color:#c8d8e8;font:14px/1.6 Consolas,monospace}
+h1{font-size:20px;color:#7ce0a8}
+h2{font-size:15px;color:#e8fff2}
+.card{background:#0a1420;border:1px solid #1f3444;border-radius:14px;padding:16px;margin:12px 0}
+label{display:block;margin-top:10px;color:#8fa8bd;font-size:12px}
+input{width:100%;padding:10px;background:#091018;color:#fff;border:1px solid #1f3444;border-radius:8px;font:inherit}
+button{margin-top:12px;padding:10px 15px;border:1px solid #1f3444;border-radius:99px;background:#111927;color:#fff;font:inherit;cursor:pointer}
+button:hover{border-color:#7ce0a8}
+.result{padding:14px;border:2px solid #1f3444;border-radius:12px;font-weight:bold}
+.ok{border-color:#7ce0a8;color:#7ce0a8}
+.halt{border-color:#ff647c;color:#ff647c}
+.small{color:#8fa8bd;font-size:12px}
+.log{white-space:pre-wrap;max-height:180px;overflow:auto;background:#000;padding:10px;border-radius:8px;font-size:12px}
+</style>
+</head>
+<body>
+<h1>🔎 verify.html — PC + PQ</h1>
+<p>PC vergleicht die erwarteten Angaben mit id.html. PQ hält das Ergebnis fest. Bei fehlendem Ausweis oder Abweichung gilt: <strong>HALT</strong>.</p>
 
-<div class="card"><h2>1. Was ist was — deine Dateien</h2>
-<table><tr><th>Datei</th><th>Rolle</th><th>Wer?</th></tr>
-<tr><td><b>index.html</b></td><td>Chef. Weiß wer links / rechts ist, wer getauscht hat, warum.</td><td>PC + PQ</td></tr>
-<tr><td><b>look.html</b></td><td>Schauen. Rabe. Nur gucken, nichts entscheiden.</td><td>PC</td></tr>
-<tr><td><b>verify.html / set.up.html</b></td><td>Prüfen. Pentagramm. 5/5 oder HALT.</td><td>PQ</td></tr>
-<tr><td><b>id.html</b></td><td>Ausweis. Wer bin ich, was ist das für ein Respo.</td><td>PQ</td></tr>
-<tr><td><b>README.md</b></td><td>Inhaltsangabe. Was ist hier drin, in 5 Zeilen.</td><td>PQ</td></tr></table></div>
+<section class="card">
+  <h2>Erwartete Angaben</h2>
+  <p class="small">Werte manuell eintragen oder „Ausweis laden“ verwenden. Vergleich läuft exakt und ohne automatische Änderungen.</p>
 
-<div class="card"><h2>2. Tragende Einheiten — SCAN + TOOLATER</h2>
-<p><b>SCAN</b> = Rabe fliegt, guckt. <b>TOOLATER</b> = Werkzeug, das erst später kommt. Nicht jetzt. Später heißt: wenn Gate PASS.</p>
-<div class="row">
-<div class="panel"><h2>🔍 SCAN — Einheit 1 (tragend)</h2><p>Was soll gescannt werden?</p><input id="scan-in" value="look.html + verify.html"><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="btn-scan">SCAN START</button><button class="btn" id="btn-scan-stop">SCAN STOP</button></div><p id="scan-out" style="margin-top:8px">Noch kein Scan.</p></div>
-<div class="panel"><h2>🧰 TOOLATER — Einheit 2 (tragend)</h2><p>Welches Werkzeug später?</p><select id="toolater-in"><option>TOOLATER: noch keins — erst SCAN, dann TOOL</option><option>TOOLATER: TAUSCHEN (links/rechts)</option><option>TOOLATER: SPEICHERN</option><option>TOOLATER: PRÜFEN 5/5</option><option>TOOLATER: BACKUP</option></select><button class="btn" id="btn-toolater" style="margin-top:8px">TOOLATER ANFORDERN</button><p id="toolater-out" style="margin-top:8px">TOOLATER schläft. Wacht erst auf, wenn SCAN fertig ist.</p></div>
-</div></div>
+  <label for="name">NAME</label><input id="name" placeholder="z. B. NC.OS — SETUP">
+  <label for="respo">RESPO</label><input id="respo" placeholder="z. B. Respo 1 — SETUP">
+  <label for="anker">ANKER</label><input id="anker" placeholder="z. B. A01 S01 D4 · STABIL">
+  <label for="home">HOME</label><input id="home" placeholder="z. B. 40">
+  <label for="mitte">MITTE</label><input id="mitte" placeholder="z. B. 41">
+  <label for="modus">MODUS</label><input id="modus" value="EYE OPEN + BRAIN OPEN = GEMEINSAM BEWUSST">
 
-<div class="card"><h2>3. Links / Rechts — Index weiß Bescheid</h2>
-<p>Jetzt: <span id="lr-label"></span></p>
-<div class="row" id="lr-row">
-<div class="panel left" id="panel-left"><h2 id="left-title">LINKS</h2><p id="left-body"></p><span class="badge" id="left-role"></span></div>
-<div class="panel right" id="panel-right"><h2 id="right-title">RECHTS</h2><p id="right-body"></p><span class="badge" id="right-role"></span></div>
-</div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-<button class="btn" id="btn-swap">⇄ TAUSCHEN — links ↔ rechts</button>
-<select id="swap-why" style="max-width:280px"><option>Warum? — SCAN sagt: so ist es besser zu sehen</option><option>Warum? — VERIFY muss links sein, weil ich links zuerst lese</option><option>Warum? — LOOK muss links sein, weil ich erst gucke, dann prüfe</option><option>Warum? — PC sagt: tauschen, weil Bildschirm so passt</option><option>Warum? — PQ sagt: tauschen, weil Reihenfolge falsch war</option></select>
-<button class="btn" id="btn-reset">RESET — LOOK links, VERIFY rechts</button>
-</div>
-<p style="margin-top:8px;font-size:11px;color:#8fa8bd">Regel: Index vergisst keinen Tausch. Jeder Tausch wird geloggt mit WER + WANN + WARUM. Kein stilles Tauschen.</p>
-</div>
+  <button id="load">📥 Ausweis aus id.html laden</button>
+  <button id="verify">✅ Jetzt prüfen</button>
+</section>
 
-<div class="card"><h2>4. Log — wer hat was wann getauscht, warum</h2><div class="log" id="log"></div><button class="btn" id="btn-export">LOG ALS TEXT KOPIEREN</button></div>
+<section class="card">
+  <h2>Prüfergebnis</h2>
+  <div id="result" class="result">Noch nicht geprüft.</div>
+  <div id="details" class="small"></div>
+</section>
+
+<section class="card">
+  <h2>Log</h2>
+  <div class="log" id="log"></div>
+</section>
 
 <script>
-let S = JSON.parse(localStorage.getItem('SETUP_PC_PQ')||'null') || {left:'look.html', right:'verify.html', log:[], scanDone:false, toolater:null};
-function save(){localStorage.setItem('SETUP_PC_PQ', JSON.stringify(S));}
-function meta(f){return f==='look.html'?{t:'LOOK — Schauen',b:'Rabe. Nur gucken. Nichts entscheiden. SCAN wohnt hier.',r:'PC / RABE / SCAN'}:{t:'VERIFY — Prüfen',b:'Pentagramm. 5/5 oder HALT. VERIFY wohnt hier. Früher set.up.html / verify.html.',r:'PQ / PENTAGRAMM / VERIFY'};}
-function render(){
-  const L=meta(S.left), R=meta(S.right);
-  document.getElementById('lr-label').textContent = 'LINKS = '+S.left+' · RECHTS = '+S.right;
-  document.getElementById('left-title').textContent='LINKS: '+S.left; document.getElementById('left-body').textContent=L.b; document.getElementById('left-role').textContent=L.r;
-  document.getElementById('right-title').textContent='RECHTS: '+S.right; document.getElementById('right-body').textContent=R.b; document.getElementById('right-role').textContent=R.r;
-  document.getElementById('log').textContent = S.log.length? S.log.join('\n') : 'Noch kein Tausch. Noch kein Scan.';
-  document.getElementById('scan-out').textContent = S.scanDone? 'SCAN fertig: '+S.left+' + '+S.right+' gesehen. TOOLATER darf jetzt aufwachen.' : 'Noch kein Scan. TOOLATER schläft noch.';
-  document.getElementById('toolater-out').textContent = S.toolater? 'TOOLATER aktiv: '+S.toolater : 'TOOLATER schläft. Wacht erst auf, wenn SCAN fertig ist.';
+const $ = id => document.getElementById(id);
+let identity = null;
+
+function log(message){
+  $("log").textContent =
+    `[${new Date().toLocaleTimeString("de-DE")}] ${message}\n` +
+    $("log").textContent;
 }
-function addLog(m){S.log.unshift('['+new Date().toLocaleTimeString('de-DE')+'] '+m); save(); render();}
-document.getElementById('btn-scan').onclick=()=>{S.scanDone=true; save(); render(); addLog('PC: SCAN gestartet für '+document.getElementById('scan-in').value+' — gesehen: '+S.left+' links, '+S.right+' rechts');};
-document.getElementById('btn-scan-stop').onclick=()=>{addLog('PC: SCAN STOP — HALT');};
-document.getElementById('btn-toolater').onclick=()=>{const t=document.getElementById('toolater-in').value; if(!S.scanDone){alert('HALT. Erst SCAN, dann TOOLATER. SCAN ist noch nicht fertig.'); addLog('PQ: TOOLATER blockiert — HALT, erst SCAN'); return;} S.toolater=t; save(); render(); addLog('PQ: TOOLATER angefordert: '+t);};
-document.getElementById('btn-swap').onclick=()=>{const why=document.getElementById('swap-why').value; const oldL=S.left, oldR=S.right; S.left=oldR; S.right=oldL; save(); render(); addLog('TAUSCH: '+oldL+' (war links) ⇄ '+oldR+' (war rechts) — JETZT: links='+S.left+', rechts='+S.right+' — '+why);};
-document.getElementById('btn-reset').onclick=()=>{S.left='look.html'; S.right='verify.html'; save(); render(); addLog('RESET: LOOK links, VERIFY rechts — Grund: Ausgangsstellung');};
-document.getElementById('btn-export').onclick=()=>{navigator.clipboard.writeText(S.log.join('\n')).then(()=>alert('Log kopiert. Kannst du in README kleben.'));};
-render();
-</script></body></html>
+
+function getText(doc, label){
+  const text = doc.body?.innerText || "";
+  const line = text.split(/\r?\n/).map(s => s.trim())
+    .find(line => line.toLowerCase().startsWith(label.toLowerCase() + ":"));
+  return line ? line.slice(line.indexOf(":") + 1).trim() : "";
+}
+
+async function loadIdentity(){
+  try{
+    const response = await fetch("id.html", {cache:"no-store"});
+    if(!response.ok) throw new Error("HTTP " + response.status);
+
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    identity = {
+      name:doc.querySelector("h1")?.textContent.replace(/^🪪\s*/, "").trim() || "",
+      respo:getText(doc, "RESPO"),
+      anker:getText(doc, "ANKER"),
+      home:getText(doc, "HOME").split("·")[0].trim(),
+      mitte:getText(doc, "HOME").split("MITTE:")[1]?.trim() || "",
+      modus:getText(doc, "MODUS")
+    };
+
+    for(const key of Object.keys(identity)){
+      if($(key)) $(key).value = identity[key];
+    }
+
+    log("PQ: Ausweis geladen. Felder mit id.html vorbelegt.");
+    showResult("Ausweis geladen. Angaben prüfen und dann „Jetzt prüfen“ wählen.", "");
+  }catch(error){
+    identity = null;
+    log("HALT: id.html nicht geladen — " + error.message);
+    showResult("HALT — id.html konnte nicht geladen werden. Dateien und Webserver prüfen.", "halt");
+  }
+}
+
+function showResult(message, state){
+  $("result").className = "result " + (state || "");
+  $("result").textContent = message;
+}
+
+$("load").onclick = loadIdentity;
+
+$("verify").onclick = () => {
+  if(!identity){
+    showResult("HALT — zuerst id.html laden.", "halt");
+    log("HALT: Prüfung ohne geladenen Ausweis verhindert.");
+    return;
+  }
+
+  const fields = ["name","respo","anker","home","mitte","modus"];
+  const mismatches = fields.filter(key =>
+    $(key).value.trim() !== String(identity[key] || "").trim()
+  );
+
+  if(mismatches.length){
+    showResult("HALT — Abweichung gefunden. Nicht weitergehen.", "halt");
+    $("details").textContent = "Abweichende Felder: " + mismatches.join(", ");
+    log("HALT: Abweichung bei " + mismatches.join(", ") + ".");
+  }else{
+    showResult("BESTÄTIGT — Angaben stimmen mit id.html überein.", "ok");
+    $("details").textContent = "PC geprüft. PQ protokolliert. Bewusst weitergehen.";
+    log("PC: Angaben stimmen. PQ: Ergebnis festgehalten.");
+  }
+};
+
+loadIdentity();
+log("verify.html gestartet — EYE OPEN + BRAIN OPEN.");
+</script>
+</body>
+</html>
